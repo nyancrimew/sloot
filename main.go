@@ -70,15 +70,19 @@ func main() {
 				Host:   record.Host(),
 				Path:   "/api",
 			}
-			os.Mkdir(record.Host(), os.ModePerm)
+			if !noDl {
+				os.Mkdir(record.Host(), os.ModePerm)
+			}
 			hostDir, _ := filepath.Abs(record.Host())
-			ioutil.WriteFile(filepath.Join(hostDir, "shodan.json"), scanner.Bytes(), os.ModePerm)
 			out, err := checkServer(baseUrl.String(), hostDir)
 			if err != nil {
 				if !quiet {
 					os.Stderr.WriteString(fmt.Sprintln("error:", err))
 				}
 				continue
+			}
+			if !noDl {
+				ioutil.WriteFile(filepath.Join(hostDir, "shodan.json"), scanner.Bytes(), os.ModePerm)
 			}
 			if noDl {
 				fmt.Println()
