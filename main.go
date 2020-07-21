@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	sonargo "github.com/deletescape/sonargo/sonar"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -71,6 +72,7 @@ func main() {
 			}
 			os.Mkdir(record.Host(), os.ModePerm)
 			hostDir, _ := filepath.Abs(record.Host())
+			ioutil.WriteFile(filepath.Join(hostDir, "shodan.json"), scanner.Bytes(), os.ModePerm)
 			out, err := checkServer(baseUrl.String(), hostDir)
 			if err != nil {
 				if !quiet {
