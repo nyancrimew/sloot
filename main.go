@@ -35,9 +35,12 @@ func main() {
 	}
 
 	if shodanFile == "" {
-		err := checkServer(flag.Arg(0))
+		out, err := checkServer(flag.Arg(0))
 		if err != nil {
 			log.Fatal(err)
+		}
+		for _, l := range out {
+			fmt.Println(l)
 		}
 	} else {
 		info, err := os.Stat(shodanFile)
@@ -66,21 +69,22 @@ func main() {
 				Host:   record.Host(),
 				Path:   "/api",
 			}
-			if noDl {
-				fmt.Printf("baseUrl %s\n", baseUrl)
-				record.Print()
-				fmt.Println("projects:")
-			}
-			if err := checkServer(baseUrl.String()); err != nil {
+			out, err := checkServer(baseUrl.String())
+			if err != nil {
 				if !quiet {
 					os.Stderr.WriteString(fmt.Sprintln("error:", err))
 				}
-				fmt.Println("---")
-				fmt.Println()
 				continue
 			}
-			fmt.Println("---")
-			fmt.Println()
+			if noDl {
+				fmt.Println()
+				record.Print()
+				fmt.Println("projects:")
+				for _, l := range out {
+					fmt.Println(l)
+				}
+				fmt.Println()
+			}
 		}
 
 		if err := scanner.Err(); err != nil {
@@ -89,17 +93,19 @@ func main() {
 	}
 }
 
-func checkServer(url string) error {
+func checkServer(url string) ([]string, error) {
+	var out []string
+
 	client, err := sonargo.NewAnonymousClient(url)
 	if err != nil {
-		return err
+		return out, err
 	}
 
 	v, _, err := client.Projects.Search(&sonargo.ProjectsSearchOption{
 		Ps: "500",
 	})
 	if err != nil {
-		return err
+		return out, err
 	}
 	comps := v.Components
 	for v.Paging.PageIndex < v.Paging.Total {
@@ -116,9 +122,9 @@ func checkServer(url string) error {
 	for _, c := range comps {
 		if noDl {
 			if c.Key == c.Name {
-				fmt.Printf("    %s\n", c.Key)
+				out = append(out, fmt.Sprintf("    %s", c.Key))
 			} else {
-				fmt.Printf("    %s (%s)\n", c.Name, c.Key)
+				out = append(out, fmt.Sprintf("    %s (%s)", c.Name, c.Key))
 			}
 		} else {
 			fmt.Println("Downloading", c.Key)
@@ -156,7 +162,7 @@ func checkServer(url string) error {
 			recurseTree(baseDir, client, comps)
 		}
 	}
-	return nil
+	return out, nil
 }
 
 func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Component) {

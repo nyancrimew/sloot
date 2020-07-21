@@ -156,8 +156,7 @@ func (r *ShodanRecord) Print() {
 	if len(r.Hostnames) > 0 {
 		fmt.Printf("hostnames: \n")
 		for _, h := range r.Hostnames {
-			fmt.Printf("         - %s\n", h)
+			fmt.Printf("    %s\n", h)
 		}
 	}
-	fmt.Println()
 }
