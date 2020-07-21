@@ -143,7 +143,7 @@ func (r *ShodanRecord) Print() {
 	fmt.Printf("port: %d\n", r.Port)
 	fmt.Printf("scheme: %s\n", r.Scheme())
 	fmt.Printf("org: %s (%s)\n", r.Org, r.Asn)
-	if r.Shodan.Crawler == "https" {
+	if r.Shodan.Module == "https" {
 		fmt.Printf("ssl.cert.subject.cn: %s\n", r.Ssl.Cert.Subject.CN)
 		for _, e := range r.Ssl.Cert.Extensions {
 			if e.Name == "subjectAltName" {
