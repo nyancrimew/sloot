@@ -17,12 +17,14 @@ import (
 
 var (
 	quiet      bool
+	verbose    bool
 	noDl       bool
 	shodanFile string
 )
 
 func init() {
 	flag.BoolVar(&quiet, "q", false, "Don't print non-fatal errors")
+	flag.BoolVar(&verbose, "v", false, "Print every file being downloaded")
 	flag.BoolVar(&noDl, "n", false, "Doesn't download discovered projects, and only prints info about them")
 	flag.StringVar(&shodanFile, "s", "", "Path to a Shodan download file with hosts to run against")
 }
@@ -228,6 +230,9 @@ func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Compo
 					return
 				}
 				p := path.Join(dir, c.Name)
+				if verbose {
+					os.Stderr.WriteString(fmt.Sprintln(p))
+				}
 				f, err := os.Create(p)
 				if err != nil {
 					if !quiet {
