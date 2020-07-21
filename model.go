@@ -135,15 +135,13 @@ func (r *ShodanRecord) Scheme() string {
 }
 
 func (r *ShodanRecord) Host() string {
-	host := r.HTTP.Host
-	if host == "" {
-		host = r.IPStr
-	}
-	return fmt.Sprintf("%s:%d", host, r.Port)
+	return fmt.Sprintf("%s:%d", r.HTTP.Host, r.Port)
 }
 
 func (r *ShodanRecord) Print() {
 	fmt.Printf("host: %s\n", r.HTTP.Host)
+	fmt.Printf("port: %d\n", r.Port)
+	fmt.Printf("scheme: %s\n", r.Scheme())
 	fmt.Printf("org: %s (%s)\n", r.Org, r.Asn)
 	if r.Shodan.Crawler == "https" {
 		fmt.Printf("ssl.cert.subject.cn: %s\n", r.Ssl.Cert.Subject.CN)
