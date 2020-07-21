@@ -95,7 +95,19 @@ func checkServer(url string) error {
 	if err != nil {
 		return err
 	}
-	for _, c := range v.Components {
+	comps := v.Components
+	for v.Paging.PageIndex < v.Paging.Total {
+		v, _, err = client.Projects.Search(&sonargo.ProjectsSearchOption{
+			Ps: "500",
+			P: fmt.Sprint(v.Paging.PageIndex + 1),
+		})
+		if err != nil {
+			os.Stderr.WriteString(fmt.Sprintln("error:", err))
+			break
+		}
+		comps = append(comps, v.Components...)
+	}
+	for _, c := range comps {
 		if noDl {
 			fmt.Printf("    %s (%s)\n", c.Name, c.Key)
 		} else {
@@ -111,8 +123,23 @@ func checkServer(url string) error {
 				fmt.Printf("error: %v\n", err)
 				continue
 			}
+			comps := tree.Components
+			for tree.Paging.PageIndex < tree.Paging.Total {
+				tree, _, err = client.Components.Tree(&sonargo.ComponentsTreeOption{
+					Component: c.Key,
+					P: fmt.Sprint(tree.Paging.PageIndex + 1),
+					Ps:        "500",
+					S:         "qualifier,name",
+					Strategy:  "children",
+				})
+				if err != nil {
+					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+					break
+				}
+				comps = append(comps, tree.Components...)
+			}
 			baseDir, _ := filepath.Abs(c.Key)
-			recurseTree(baseDir, client, tree.Components)
+			recurseTree(baseDir, client, comps)
 		}
 	}
 	return nil
@@ -131,10 +158,25 @@ func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Compo
 				Strategy:  "children",
 			})
 			if err != nil {
-				fmt.Printf("error: %v\n", err)
+				os.Stderr.WriteString(fmt.Sprintln("error:", err))
 				continue
 			}
-			recurseTree(p, client, tree.Components)
+			comps := tree.Components
+			for tree.Paging.PageIndex < tree.Paging.Total {
+				tree, _, err = client.Components.Tree(&sonargo.ComponentsTreeOption{
+					Component: c.Key,
+					P: fmt.Sprint(tree.Paging.PageIndex + 1),
+					Ps:        "500",
+					S:         "qualifier,name",
+					Strategy:  "children",
+				})
+				if err != nil {
+					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+					break
+				}
+				comps = append(comps, tree.Components...)
+			}
+			recurseTree(p, client, comps)
 		case "FIL", "UTS":
 			raw, _, err := client.Sources.Raw(&sonargo.SourcesRawOption{
 				Key: c.Key,
