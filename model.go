@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"net/url"
+)
 
 type ShodanRecord struct {
 	Shodan struct {
@@ -142,6 +145,11 @@ func (r *ShodanRecord) Print() {
 	fmt.Printf("host: %s\n", r.HTTP.Host)
 	fmt.Printf("port: %d\n", r.Port)
 	fmt.Printf("scheme: %s\n", r.Scheme())
+	link := url.URL{
+		Scheme: r.Scheme(),
+		Host: r.Host(),
+	}
+	fmt.Printf("link: %s\n", link.String())
 	fmt.Printf("org: %s (%s)\n", r.Org, r.Asn)
 	if r.Shodan.Module == "https" {
 		fmt.Printf("ssl.cert.subject.cn: %s\n", r.Ssl.Cert.Subject.CN)
