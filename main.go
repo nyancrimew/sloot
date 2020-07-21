@@ -68,9 +68,9 @@ func main() {
 				fmt.Println("projects:")
 			}
 			if err := checkServer(baseUrl.String()); err != nil {
+				os.Stderr.WriteString(fmt.Sprintln("error:", err))
 				fmt.Println("---")
 				fmt.Println()
-				os.Stderr.WriteString(fmt.Sprintln("error:", err))
 				continue
 			}
 			fmt.Println("---")

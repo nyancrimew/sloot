@@ -83,7 +83,7 @@ type ShodanRecord struct {
 				Sha256 string `json:"sha256"`
 				Sha1   string `json:"sha1"`
 			} `json:"fingerprint"`
-			Serial  int64 `json:"serial"`
+			Serial  interface{} `json:"serial"`
 			Subject struct {
 				CN string `json:"CN"`
 			} `json:"subject"`
@@ -128,14 +128,18 @@ type ShodanRecord struct {
 }
 
 func (r *ShodanRecord) Scheme() string {
-	if r.Shodan.Crawler == "https" {
+	if r.Shodan.Module == "https" {
 		return "https"
 	}
 	return "http"
 }
 
 func (r *ShodanRecord) Host() string {
-	return fmt.Sprintf("%s:%s", r.HTTP.Host, r.Port)
+	host := r.HTTP.Host
+	if host == "" {
+		host = r.IPStr
+	}
+	return fmt.Sprintf("%s:%d", host, r.Port)
 }
 
 func (r *ShodanRecord) Print() {
