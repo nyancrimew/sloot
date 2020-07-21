@@ -14,11 +14,13 @@ import (
 )
 
 var (
+	quiet      bool
 	noDl       bool
 	shodanFile string
 )
 
 func init() {
+	flag.BoolVar(&quiet, "q", false, "Don't print non-fatal errors")
 	flag.BoolVar(&noDl, "n", false, "Doesn't download discovered projects, and only prints info about them")
 	flag.StringVar(&shodanFile, "s", "", "Path to a Shodan download file with hosts to run against")
 }
@@ -54,7 +56,9 @@ func main() {
 		for scanner.Scan() {
 			var record ShodanRecord
 			if err := json.Unmarshal(scanner.Bytes(), &record); err != nil {
-				os.Stderr.WriteString(fmt.Sprintln("error:", err))
+				if !quiet {
+					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+				}
 				continue
 			}
 			baseUrl := &url.URL{
@@ -68,7 +72,9 @@ func main() {
 				fmt.Println("projects:")
 			}
 			if err := checkServer(baseUrl.String()); err != nil {
-				os.Stderr.WriteString(fmt.Sprintln("error:", err))
+				if !quiet {
+					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+				}
 				fmt.Println("---")
 				fmt.Println()
 				continue
@@ -99,7 +105,7 @@ func checkServer(url string) error {
 	for v.Paging.PageIndex < v.Paging.Total {
 		v, _, err = client.Projects.Search(&sonargo.ProjectsSearchOption{
 			Ps: "500",
-			P: fmt.Sprint(v.Paging.PageIndex + 1),
+			P:  fmt.Sprint(v.Paging.PageIndex + 1),
 		})
 		if err != nil {
 			os.Stderr.WriteString(fmt.Sprintln("error:", err))
@@ -124,20 +130,24 @@ func checkServer(url string) error {
 				Strategy:  "children",
 			})
 			if err != nil {
-				fmt.Printf("error: %v\n", err)
+				if !quiet {
+					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+				}
 				continue
 			}
 			comps := tree.Components
 			for tree.Paging.PageIndex < tree.Paging.Total {
 				tree, _, err = client.Components.Tree(&sonargo.ComponentsTreeOption{
 					Component: c.Key,
-					P: fmt.Sprint(tree.Paging.PageIndex + 1),
+					P:         fmt.Sprint(tree.Paging.PageIndex + 1),
 					Ps:        "500",
 					S:         "qualifier,name",
 					Strategy:  "children",
 				})
 				if err != nil {
-					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+					if !quiet {
+						os.Stderr.WriteString(fmt.Sprintln("error:", err))
+					}
 					break
 				}
 				comps = append(comps, tree.Components...)
@@ -162,20 +172,24 @@ func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Compo
 				Strategy:  "children",
 			})
 			if err != nil {
-				os.Stderr.WriteString(fmt.Sprintln("error:", err))
+				if !quiet {
+					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+				}
 				continue
 			}
 			comps := tree.Components
 			for tree.Paging.PageIndex < tree.Paging.Total {
 				tree, _, err = client.Components.Tree(&sonargo.ComponentsTreeOption{
 					Component: c.Key,
-					P: fmt.Sprint(tree.Paging.PageIndex + 1),
+					P:         fmt.Sprint(tree.Paging.PageIndex + 1),
 					Ps:        "500",
 					S:         "qualifier,name",
 					Strategy:  "children",
 				})
 				if err != nil {
-					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+					if !quiet {
+						os.Stderr.WriteString(fmt.Sprintln("error:", err))
+					}
 					break
 				}
 				comps = append(comps, tree.Components...)
@@ -186,14 +200,17 @@ func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Compo
 				Key: c.Key,
 			})
 			if err != nil {
-				fmt.Printf("error: %v\n", err)
+				if !quiet {
+					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+				}
 				continue
 			}
 			p := path.Join(dir, c.Name)
 			f, err := os.Create(p)
 			if err != nil {
-				fmt.Println("dir:", dir)
-				fmt.Printf("error: %v\n", err)
+				if !quiet {
+					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+				}
 				continue
 			}
 			f.WriteString(*raw)
