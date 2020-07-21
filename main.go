@@ -109,7 +109,11 @@ func checkServer(url string) error {
 	}
 	for _, c := range comps {
 		if noDl {
-			fmt.Printf("    %s (%s)\n", c.Name, c.Key)
+			if c.Key == c.Name {
+				fmt.Printf("    %s\n", c.Key)
+			} else {
+				fmt.Printf("    %s (%s)\n", c.Name, c.Key)
+			}
 		} else {
 			fmt.Println("Downloading", c.Key)
 			os.Mkdir(c.Key, os.ModePerm)
