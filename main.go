@@ -206,25 +206,27 @@ func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Compo
 			}
 			recurseTree(p, client, comps)
 		case "FIL", "UTS":
-			raw, _, err := client.Sources.Raw(&sonargo.SourcesRawOption{
-				Key: c.Key,
-			})
-			if err != nil {
-				if !quiet {
-					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+			go func(dir string, c sonargo.Component) {
+				raw, _, err := client.Sources.Raw(&sonargo.SourcesRawOption{
+					Key: c.Key,
+				})
+				if err != nil {
+					if !quiet {
+						os.Stderr.WriteString(fmt.Sprintln("error:", err))
+					}
+					return
 				}
-				continue
-			}
-			p := path.Join(dir, c.Name)
-			f, err := os.Create(p)
-			if err != nil {
-				if !quiet {
-					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+				p := path.Join(dir, c.Name)
+				f, err := os.Create(p)
+				if err != nil {
+					if !quiet {
+						os.Stderr.WriteString(fmt.Sprintln("error:", err))
+					}
+					return
 				}
-				continue
-			}
-			f.WriteString(*raw)
-			f.Close()
+				f.WriteString(*raw)
+				f.Close()
+			}(dir, *c)
 		default:
 			fmt.Printf("Unknown qualifier %s\n", c.Qualifier)
 		}
