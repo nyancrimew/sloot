@@ -24,7 +24,7 @@ var (
 
 func init() {
 	flag.BoolVar(&quiet, "q", false, "Don't print non-fatal errors")
-	flag.BoolVar(&verbose, "v", false, "Print every file being downloaded")
+	flag.BoolVar(&verbose, "verbose", false, "Print every file being downloaded")
 	flag.BoolVar(&noDl, "n", false, "Doesn't download discovered projects, and only prints info about them")
 	flag.StringVar(&shodanFile, "s", "", "Path to a Shodan download file with hosts to run against")
 }
