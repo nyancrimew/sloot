@@ -35,7 +35,7 @@ func main() {
 	}
 
 	if shodanFile == "" {
-		out, err := checkServer(flag.Arg(0))
+		out, err := checkServer(flag.Arg(0), ".")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -69,7 +69,9 @@ func main() {
 				Host:   record.Host(),
 				Path:   "/api",
 			}
-			out, err := checkServer(baseUrl.String())
+			os.Mkdir(record.Host(), os.ModePerm)
+			hostDir, _ := filepath.Abs(record.Host())
+			out, err := checkServer(baseUrl.String(), hostDir)
 			if err != nil {
 				if !quiet {
 					os.Stderr.WriteString(fmt.Sprintln("error:", err))
@@ -93,7 +95,7 @@ func main() {
 	}
 }
 
-func checkServer(url string) ([]string, error) {
+func checkServer(url string, base string) ([]string, error) {
 	var out []string
 
 	client, err := sonargo.NewAnonymousClient(url)
@@ -128,7 +130,7 @@ func checkServer(url string) ([]string, error) {
 			}
 		} else {
 			fmt.Println("Downloading", c.Key)
-			os.Mkdir(c.Key, os.ModePerm)
+			os.Mkdir(filepath.Join(base, c.Key), os.ModePerm)
 			tree, _, err := client.Components.Tree(&sonargo.ComponentsTreeOption{
 				Component: c.Key,
 				Ps:        "500",
@@ -158,7 +160,7 @@ func checkServer(url string) ([]string, error) {
 				}
 				comps = append(comps, tree.Components...)
 			}
-			baseDir, _ := filepath.Abs(c.Key)
+			baseDir, _ := filepath.Abs(filepath.Join(base, c.Key))
 			recurseTree(baseDir, client, comps)
 		}
 	}
