@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sync"
 )
 
 var (
@@ -127,6 +128,7 @@ func checkServer(url string, base string) ([]string, error) {
 		}
 		comps = append(comps, v.Components...)
 	}
+	var wg sync.WaitGroup
 	for _, c := range comps {
 		if noDl {
 			if c.Key == c.Name {
@@ -135,25 +137,13 @@ func checkServer(url string, base string) ([]string, error) {
 				out = append(out, fmt.Sprintf("    %s (%s)", c.Name, c.Key))
 			}
 		} else {
-			fmt.Println("Downloading", c.Key)
-			os.Mkdir(filepath.Join(base, c.Key), os.ModePerm)
-			tree, _, err := client.Components.Tree(&sonargo.ComponentsTreeOption{
-				Component: c.Key,
-				Ps:        "500",
-				S:         "qualifier,name",
-				Strategy:  "children",
-			})
-			if err != nil {
-				if !quiet {
-					os.Stderr.WriteString(fmt.Sprintln("error:", err))
-				}
-				continue
-			}
-			comps := tree.Components
-			for tree.Paging.PageIndex < tree.Paging.Total {
-				tree, _, err = client.Components.Tree(&sonargo.ComponentsTreeOption{
+			wg.Add(1)
+			go func(c sonargo.Component) {
+				defer wg.Done()
+				fmt.Println("Downloading", c.Key)
+				os.Mkdir(filepath.Join(base, c.Key), os.ModePerm)
+				tree, _, err := client.Components.Tree(&sonargo.ComponentsTreeOption{
 					Component: c.Key,
-					P:         fmt.Sprint(tree.Paging.PageIndex + 1),
 					Ps:        "500",
 					S:         "qualifier,name",
 					Strategy:  "children",
@@ -162,14 +152,31 @@ func checkServer(url string, base string) ([]string, error) {
 					if !quiet {
 						os.Stderr.WriteString(fmt.Sprintln("error:", err))
 					}
-					break
+					return
 				}
-				comps = append(comps, tree.Components...)
-			}
-			baseDir, _ := filepath.Abs(filepath.Join(base, c.Key))
-			recurseTree(baseDir, client, comps)
+				comps := tree.Components
+				for tree.Paging.PageIndex < tree.Paging.Total {
+					tree, _, err = client.Components.Tree(&sonargo.ComponentsTreeOption{
+						Component: c.Key,
+						P:         fmt.Sprint(tree.Paging.PageIndex + 1),
+						Ps:        "500",
+						S:         "qualifier,name",
+						Strategy:  "children",
+					})
+					if err != nil {
+						if !quiet {
+							os.Stderr.WriteString(fmt.Sprintln("error:", err))
+						}
+						break
+					}
+					comps = append(comps, tree.Components...)
+				}
+				baseDir, _ := filepath.Abs(filepath.Join(base, c.Key))
+				recurseTree(baseDir, client, comps)
+			}(*c)
 		}
 	}
+	wg.Wait()
 	return out, nil
 }
 
@@ -228,8 +235,8 @@ func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Compo
 					}
 					return
 				}
+				defer f.Close()
 				f.WriteString(*raw)
-				f.Close()
 			}(dir, *c)
 		default:
 			fmt.Printf("Unknown qualifier %s\n", c.Qualifier)
