@@ -131,7 +131,11 @@ func checkServer(url string, base string) ([]string, error) {
 		comps = append(comps, v.Components...)
 	}
 	var wg sync.WaitGroup
-	for _, c := range comps {
+	for i, c := range comps {
+		if i % 50 == 0 {
+			wg.Wait()
+			wg = sync.WaitGroup{}
+		}
 		if noDl {
 			if c.Key == c.Name {
 				out = append(out, fmt.Sprintf("    %s", c.Key))
