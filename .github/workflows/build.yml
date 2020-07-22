@@ -1,0 +1,34 @@
+name: Build
+on: [push]
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [linux, darwin]
+        arch: ["386", "amd64", "arm", "arm64"]
+        exclude:
+          - os: darwin
+            arch: "386"
+          - os: darwin
+            arch: "arm"
+          - os: darwin
+            arch: "arm64"
+    steps:
+      - name: Set up Go 1.13
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+      - name: Check out source code
+        uses: actions/checkout@v1
+      - name: Build
+        run: go build .
+        env:
+          GOARCH: ${{ matrix.arch }}
+          GOOS: ${{ matrix.os }}
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: sloot-${{ matrix.os }}-${{ matrix.arch }}
+          path: sloot
