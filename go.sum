@@ -4,6 +4,8 @@ github.com/deletescape/sonargo v0.0.2-0.20200718091359-e57ad63d3d22 h1:p3yv8DgP8
 github.com/deletescape/sonargo v0.0.2-0.20200718091359-e57ad63d3d22/go.mod h1:E53Ms4i1o75vZ9IW3rAQCt7nvlU5dg0FEdlbBkopumU=
 github.com/deletescape/sonargo v0.0.2-0.20200729140816-85bf7be75958 h1:hjnREFJ/R8ILCiJzE/6aCCTHbYhw+dbH6XzUrZnZOfo=
 github.com/deletescape/sonargo v0.0.2-0.20200729140816-85bf7be75958/go.mod h1:E53Ms4i1o75vZ9IW3rAQCt7nvlU5dg0FEdlbBkopumU=
+github.com/deletescape/sonargo v0.0.2-0.20200729150615-b4cc387fa40f h1:XDaVehkKXEKB+nLjSTa6g5AVEEVQ08NenyRYqsL0r4I=
+github.com/deletescape/sonargo v0.0.2-0.20200729150615-b4cc387fa40f/go.mod h1:E53Ms4i1o75vZ9IW3rAQCt7nvlU5dg0FEdlbBkopumU=
 github.com/fatih/color v1.9.0 h1:8xPHl4/q1VyqGIPif1F+1V3Y3lSmrq01EabUW3CoW5s=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
