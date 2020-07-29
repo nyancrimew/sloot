@@ -151,7 +151,6 @@ func checkServer(url string, base string) ([]string, error) {
 				tree, _, err := client.Components.Tree(&sonargo.ComponentsTreeOption{
 					Component: c.Key,
 					Ps:        "500",
-					S:         "qualifier,name",
 					Strategy:  "children",
 				})
 				if err != nil {
@@ -166,7 +165,6 @@ func checkServer(url string, base string) ([]string, error) {
 						Component: c.Key,
 						P:         fmt.Sprint(tree.Paging.PageIndex + 1),
 						Ps:        "500",
-						S:         "qualifier,name",
 						Strategy:  "children",
 					})
 					if err != nil {
@@ -195,7 +193,6 @@ func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Compo
 			tree, _, err := client.Components.Tree(&sonargo.ComponentsTreeOption{
 				Component: c.Key,
 				Ps:        "500",
-				S:         "qualifier,name",
 				Strategy:  "children",
 			})
 			if err != nil {
@@ -210,7 +207,6 @@ func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Compo
 					Component: c.Key,
 					P:         fmt.Sprint(tree.Paging.PageIndex + 1),
 					Ps:        "500",
-					S:         "qualifier,name",
 					Strategy:  "children",
 				})
 				if err != nil {
