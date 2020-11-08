@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -78,6 +79,7 @@ func main() {
 				os.Mkdir(record.Host(), os.ModePerm)
 			}
 			hostDir, _ := filepath.Abs(record.Host())
+			hostDir = sanitizePath(hostDir)
 			out, err := checkServer(baseUrl.String(), hostDir)
 			if err != nil {
 				if noDl {
@@ -159,7 +161,7 @@ func checkServer(url string, base string) ([]string, error) {
 			go func(c sonargo.Component) {
 				defer wg.Done()
 				fmt.Println("Downloading", c.Key)
-				os.Mkdir(filepath.Join(base, c.Key), os.ModePerm)
+				os.Mkdir(sanitizePath(filepath.Join(base, c.Key)), os.ModePerm)
 				tree, _, err := client.Components.Tree(&sonargo.ComponentsTreeOption{
 					Component: c.Key,
 					Ps:        "500",
@@ -188,6 +190,7 @@ func checkServer(url string, base string) ([]string, error) {
 					comps = append(comps, tree.Components...)
 				}
 				baseDir, _ := filepath.Abs(filepath.Join(base, c.Key))
+				baseDir = sanitizePath(baseDir)
 				recurseTree(baseDir, client, comps)
 			}(*c)
 		}
@@ -200,7 +203,7 @@ func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Compo
 	for _, c := range components {
 		switch c.Qualifier {
 		case "DIR", "BRC":
-			p := path.Join(dir, c.Path)
+			p := sanitizePath(path.Join(dir, c.Path))
 			os.MkdirAll(p, os.ModePerm)
 			tree, _, err := client.Components.Tree(&sonargo.ComponentsTreeOption{
 				Component: c.Key,
@@ -241,7 +244,7 @@ func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Compo
 					}
 					return
 				}
-				p := path.Join(dir, c.Name)
+				p := sanitizePath(path.Join(dir, c.Name))
 				if verbose {
 					os.Stderr.WriteString(fmt.Sprintln(p))
 				}
@@ -259,4 +262,8 @@ func recurseTree(dir string, client *sonargo.Client, components []*sonargo.Compo
 			fmt.Printf("Unknown qualifier %s\n", c.Qualifier)
 		}
 	}
+}
+
+func sanitizePath(path string) string {
+	return strings.ReplaceAll(path, ":", "_")
 }
