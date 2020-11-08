@@ -138,7 +138,11 @@ func (r *ShodanRecord) Scheme() string {
 }
 
 func (r *ShodanRecord) Host() string {
-	return fmt.Sprintf("%s:%d", r.HTTP.Host, r.Port)
+	h := r.HTTP.Host
+	if h == "" {
+		h = r.IPStr
+	}
+	return fmt.Sprintf("%s:%d", h, r.Port)
 }
 
 func (r *ShodanRecord) Print() {

@@ -70,24 +70,18 @@ func main() {
 				continue
 			}
 			baseUrl := &url.URL{
+				User:	url.UserPassword("admin", "admin"),
 				Scheme: record.Scheme(),
 				Host:   record.Host(),
 				Path:   "/api",
 			}
 			if !noDl {
-				baseUrl.User = url.UserPassword("admin", "admin")
 				os.Mkdir(record.Host(), os.ModePerm)
 			}
 			hostDir, _ := filepath.Abs(record.Host())
 			hostDir = sanitizePath(hostDir)
 			out, err := checkServer(baseUrl.String(), hostDir)
 			if err != nil {
-				if noDl {
-					if !quiet {
-						os.Stderr.WriteString(fmt.Sprintln("error:", err))
-					}
-					continue
-				}
 				// Try again without credentials
 				baseUrl.User = nil
 				out, err = checkServer(baseUrl.String(), hostDir)
