@@ -74,15 +74,27 @@ func main() {
 				Path:   "/api",
 			}
 			if !noDl {
+				baseUrl.User = url.UserPassword("admin", "admin")
 				os.Mkdir(record.Host(), os.ModePerm)
 			}
 			hostDir, _ := filepath.Abs(record.Host())
 			out, err := checkServer(baseUrl.String(), hostDir)
 			if err != nil {
-				if !quiet {
-					os.Stderr.WriteString(fmt.Sprintln("error:", err))
+				if noDl {
+					if !quiet {
+						os.Stderr.WriteString(fmt.Sprintln("error:", err))
+					}
+					continue
 				}
-				continue
+				// Try again without credentials
+				baseUrl.User = nil
+				out, err = checkServer(baseUrl.String(), hostDir)
+				if err != nil {
+					if !quiet {
+						os.Stderr.WriteString(fmt.Sprintln("error:", err))
+					}
+					continue
+				}
 			}
 			if !noDl {
 				ioutil.WriteFile(filepath.Join(hostDir, "shodan.json"), scanner.Bytes(), os.ModePerm)
