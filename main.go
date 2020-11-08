@@ -75,9 +75,6 @@ func main() {
 				Host:   record.Host(),
 				Path:   "/api",
 			}
-			if !noDl {
-				os.Mkdir(record.Host(), os.ModePerm)
-			}
 			hostDir, _ := filepath.Abs(record.Host())
 			hostDir = sanitizePath(hostDir)
 			out, err := checkServer(baseUrl.String(), hostDir)
